@@ -16,7 +16,7 @@
  },
    "content_scripts": [
      {
-       "matches": ["https://*.alza.sk/*", "https://*.alza.cz/*", "https://*.hamty.cz/*", "https://*.madmonq.gg/*", "https://*.secretlab.eu/*",  "https://*.secretlab.co/*", "https://*.czc.cz/*"],
+       "matches": ["https://*.alza.sk/*", "https://*.alza.cz/*"],
        "js": ["background.js"]
      }
    ]
