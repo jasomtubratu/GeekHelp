@@ -1,0 +1,24 @@
+{
+   "name": "GeekHelper",
+   "version": "2.0",
+   "manifest_version": 3,
+   "description": "Presmeruje ťa na odkaz, kde môžeš pomôcť GeekBoyovi tvojími nákupmi.",
+   "permissions": ["storage", "activeTab"],
+   "action": {
+     "default_popup": "popup/index.html",
+     "default_title": "GeekHelper",
+     "default_icon": {
+       "128": "icons/icon_128.png"
+     }
+   },
+   "icons": {
+     "128": "icons/icon_128.png"
+ },
+   "content_scripts": [
+     {
+       "matches": ["https://*.alza.sk/*", "https://*.alza.cz/*", "https://*.hamty.cz/*", "https://*.madmonq.gg/*", "https://*.secretlab.eu/*",  "https://*.secretlab.co/*", "https://*.czc.cz/*"],
+       "js": ["background.js"]
+     }
+   ]
+ }
+ 
