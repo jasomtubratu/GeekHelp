@@ -1,94 +1,53 @@
-//
-//      GeekHelper
-//    Author: IBadTomas
-//
-// Actually, viem, že je to dosť trash code, ale funguje to.
-//
+import { alzaDomains, queryParamsAlza, isValidAlzaURL, hasExistingParamsAlza, getPopupEnabled, setPopupEnabled } from './utils';
 
-const alzaDomains = ["https://alza.sk", "https://www.alza.sk", "https://www.alza.cz", "https://alza.cz"];
-
-const queryParamsAlza = "?idp=8435&banner_id=34308";
-
-const hasExistingParamsAlza = window.location.search.includes("idp=8435&banner_id=34308");
-
-const isValidAlzaURL = (url) => {
-  const validPatterns = [
-    /^https?:\/\/(?:www\.)?alza\.(?:cz|sk)\/[a-zA-Z0-9-]+-d[0-9]+\.htm$/,
-  ];
-  return validPatterns.some((pattern) => pattern.test(url));
-};
-
-
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', () => {
   const SettingsButton = document.getElementById('settings');
   const popupContainer = document.getElementById('popup-container');
-
-  function getPopupEnabled(callback) {
-    chrome.storage.sync.get('popupEnabled', function (data) {
-      callback(!!data.popupEnabled);
-    });
-  }
-
-  function setPopupEnabled(enabled, callback) {
-    chrome.storage.sync.set({ popupEnabled: enabled }, callback);
-  }
 
   function updateButtonText(enabled) {
     SettingsButton.textContent = enabled ? 'PopUp je zapnutý' : 'PopUp je vypnutý';
   }
 
-  const isValidAlzaURL = (url) => {
-    const validPatterns = [
-      /^https?:\/\/(?:www\.)?alza\.(?:cz|sk)\/[a-zA-Z0-9-]+-d[0-9]+\.htm$/,
-    ];
-    return validPatterns.some((pattern) => pattern.test(url));
-  };
-
-
   function redirectToNewPopupContainer() {
-    popupContainer.innerHTML = '<div id="title">GeekHelper</div> <div id="description">Práve sa nachádzaš na Webovej stránke, pomocou ktorej môžeš podporiť GeekBoya. Chceš presmerovať?</div> <button id="redirect" class="redirect-button">Presmerovať</button>';
+    popupContainer.innerHTML = `
+      <div id="title">GeekHelper</div>
+      <div id="description">Práve sa nachádzaš na Webovej stránke, pomocou ktorej môžeš podporiť GeekBoya. Chceš presmerovať?</div>
+      <button id="redirect" class="redirect-button">Presmerovať</button>`;
+
     const RedirectButton = document.getElementById('redirect');
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const currentURL = tabs[0].url;
-      var newURL;
-  
-      RedirectButton.addEventListener('click', function () {
+      if (!currentURL) return;
+
+      RedirectButton.addEventListener('click', () => {
         if (!hasExistingParamsAlza && isValidAlzaURL(currentURL)) {
-          newURL = currentURL + queryParamsAlza;
-        } 
-        console.log(newURL)
-        chrome.tabs.update({url: newURL})
-        
+          const newURL = currentURL.includes('?') 
+            ? `${currentURL}&${queryParamsAlza.slice(1)}`
+            : `${currentURL}${queryParamsAlza}`;
+          chrome.tabs.update({ url: newURL });
+        }
       });
     });
   }
 
-  getPopupEnabled(function (enabled) {
+  getPopupEnabled((enabled) => {
     updateButtonText(enabled);
   });
 
-  SettingsButton.addEventListener('click', function () {
-    getPopupEnabled(function (enabled) {
+  SettingsButton.addEventListener('click', () => {
+    getPopupEnabled((enabled) => {
       const newStatus = !enabled;
-
-      setPopupEnabled(newStatus, function () {
+      setPopupEnabled(newStatus, () => {
         updateButtonText(newStatus);
       });
     });
   });
 
-  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const currentURL = tabs[0].url;
-    console.log(currentURL);
-    if (
-      isValidAlzaURL(currentURL)
-    ) {
-      console.log(true);
+    if (currentURL && isValidAlzaURL(currentURL)) {
       redirectToNewPopupContainer();
-    } else {
-      console.log("false");
     }
   });
-
 });
-
